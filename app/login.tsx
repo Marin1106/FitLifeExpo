@@ -15,9 +15,9 @@ export default function LoginScreen() {
       return;
     }
 
-    console.log(`Iniciando sesión como ${role}`);
-    // ✅ Redirige a la pestaña principal después del login
-    router.replace("/(tabs)"); 
+    // Aquí podrías agregar lógica de autenticación real
+    console.log("Iniciando sesión...");
+    router.replace("/(tabs)/ejercicios"); // 👈 Primera pantalla después del login
   };
 
   return (
