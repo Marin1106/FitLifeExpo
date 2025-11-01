@@ -1,59 +1,40 @@
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function LoginScreen() {
+export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"usuario" | "entrenador" | "administrador" | null>(null);
 
   const handleLogin = async () => {
-    if (!email || !password || !role) {
-      alert("Por favor completa todos los campos y selecciona un rol");
-      return;
-    }
-
     try {
-      const storedUser = await AsyncStorage.getItem("userData");
-      if (!storedUser) {
-        alert("No hay usuarios registrados");
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) {
+        Alert.alert("Error", "No hay usuarios registrados");
         return;
       }
 
-      const { email: savedEmail, password: savedPassword, role: savedRole } = JSON.parse(storedUser);
-
-      if (email === savedEmail && password === savedPassword && role === savedRole) {
-        alert("Inicio de sesión exitoso 🎉");
+      const user = JSON.parse(userData);
+      if (user.email === email && user.password === password) {
+        Alert.alert("Bienvenido", `Hola ${user.name}`);
         router.replace("/(tabs)/ejercicios");
       } else {
-        alert("Credenciales incorrectas");
+        Alert.alert("Error", "Correo o contraseña incorrectos");
       }
     } catch (error) {
-      console.error("Error al iniciar sesión:", error);
+      console.error(error);
     }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ alignItems: "center" }}>
-      <Image
-        source={{ uri: "https://cdn-icons-png.flaticon.com/512/808/808464.png" }}
-        style={styles.logo}
-      />
+      <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/808/808464.png" }} style={styles.logo} />
       <Text style={styles.title}>FitLife</Text>
       <Text style={styles.subtitle}>Entrena. Come bien. Vive mejor.</Text>
 
-      {/* Inputs */}
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
@@ -70,41 +51,12 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      {/* Selección de rol */}
-      <Text style={styles.sectionTitle}>Selecciona tu rol</Text>
-      <View style={styles.roleContainer}>
-        <TouchableOpacity
-          style={[styles.roleButton, role === "usuario" && styles.activeRole]}
-          onPress={() => setRole("usuario")}
-        >
-          <Ionicons name="person" size={24} color="#fff" />
-          <Text style={styles.roleText}>Usuario</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.roleButton, role === "entrenador" && styles.activeRole]}
-          onPress={() => setRole("entrenador")}
-        >
-          <Ionicons name="barbell" size={24} color="#fff" />
-          <Text style={styles.roleText}>Entrenador</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.roleButton, role === "administrador" && styles.activeRole]}
-          onPress={() => setRole("administrador")}
-        >
-          <Ionicons name="shield-checkmark" size={24} color="#fff" />
-          <Text style={styles.roleText}>Admin</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Botón de login */}
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginText}>Iniciar Sesión</Text>
       </TouchableOpacity>
 
-      {/* 👉 Botón que lleva al registro */}
-      <TouchableOpacity onPress={() => router.push("../registro")}>
+      {/* 🔗 Enlace al registro */}
+      <TouchableOpacity onPress={() => router.push("/register")}>
         <Text style={styles.footer}>¿No tienes cuenta? Regístrate gratis</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -129,29 +81,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginBottom: 15,
   },
-  sectionTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-    marginVertical: 15,
-    alignSelf: "flex-start",
-  },
-  roleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 25,
-  },
-  roleButton: {
-    backgroundColor: "#1b263b",
-    flex: 1,
-    alignItems: "center",
-    padding: 12,
-    borderRadius: 10,
-    marginHorizontal: 4,
-  },
-  activeRole: { backgroundColor: "#1e90ff" },
-  roleText: { color: "#fff", marginTop: 5, fontSize: 14 },
   loginButton: {
     backgroundColor: "#1e90ff",
     width: "100%",
