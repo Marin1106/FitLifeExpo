@@ -1,47 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useRouter } from "expo-router"; // ✅ Importamos el hook de navegación de expo-router
 import React, { useState } from "react";
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginScreen() {
-  const router = useRouter();
+  const router = useRouter(); // ✅ Usamos el router de expo-router
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"usuario" | "entrenador" | "administrador" | null>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (!email || !password || !role) {
       alert("Por favor completa todos los campos y selecciona un rol");
       return;
     }
 
-    try {
-      const storedUser = await AsyncStorage.getItem("userData");
-      if (!storedUser) {
-        alert("No hay usuarios registrados");
-        return;
-      }
-
-      const { email: savedEmail, password: savedPassword, role: savedRole } = JSON.parse(storedUser);
-
-      if (email === savedEmail && password === savedPassword && role === savedRole) {
-        alert("Inicio de sesión exitoso 🎉");
-        router.replace("/(tabs)/ejercicios");
-      } else {
-        alert("Credenciales incorrectas");
-      }
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error);
-    }
+    // Aquí podrías agregar lógica de autenticación real
+    console.log("Iniciando sesión...");
+    router.replace("/(tabs)/ejercicios"); // 👈 Primera pantalla después del login
   };
 
   return (
@@ -103,10 +79,7 @@ export default function LoginScreen() {
         <Text style={styles.loginText}>Iniciar Sesión</Text>
       </TouchableOpacity>
 
-      {/* 👉 Botón que lleva al registro */}
-      <TouchableOpacity onPress={() => router.push("/registro")}>
-        <Text style={styles.footer}>¿No tienes cuenta? Regístrate gratis</Text>
-      </TouchableOpacity>
+      <Text style={styles.footer}>¿No tienes cuenta? Regístrate gratis</Text>
     </ScrollView>
   );
 }
@@ -118,9 +91,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
   },
-  logo: { width: 90, height: 90, marginBottom: 20 },
-  title: { color: "#fff", fontSize: 28, fontWeight: "bold" },
-  subtitle: { color: "#a9bcd0", fontSize: 16, marginBottom: 30 },
+  logo: {
+    width: 90,
+    height: 90,
+    marginBottom: 20,
+  },
+  title: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "bold",
+  },
+  subtitle: {
+    color: "#a9bcd0",
+    fontSize: 16,
+    marginBottom: 30,
+  },
   input: {
     width: "100%",
     backgroundColor: "#1b263b",
@@ -150,8 +135,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 4,
   },
-  activeRole: { backgroundColor: "#1e90ff" },
-  roleText: { color: "#fff", marginTop: 5, fontSize: 14 },
+  activeRole: {
+    backgroundColor: "#1e90ff",
+  },
+  roleText: {
+    color: "#fff",
+    marginTop: 5,
+    fontSize: 14,
+  },
   loginButton: {
     backgroundColor: "#1e90ff",
     width: "100%",
@@ -159,6 +150,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  loginText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  footer: { color: "#a9bcd0", marginTop: 25, fontSize: 13 },
+  loginText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  footer: {
+    color: "#a9bcd0",
+    marginTop: 25,
+    fontSize: 13,
+  },
 });
