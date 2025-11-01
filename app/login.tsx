@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -13,12 +14,25 @@ import {
   View,
 } from "react-native";
 
+type Rol = "usuario" | "entrenador" | "administrador" | null;
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"usuario" | "entrenador" | "administrador" | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(true); // 🔄 Cambia el tema manualmente
+  const [role, setRole] = useState<Rol>(null);
+  const [loading, setLoading] = useState(false);
+  const [isDark, setIsDark] = useState(true); // 👈 modo oscuro por defecto
+
+  // 🎨 Temas
+  const theme = {
+    background: isDark ? "#0d1b2a" : "#f5f5f5",
+    text: isDark ? "#ffffff" : "#000000",
+    inputBg: isDark ? "#1b263b" : "#e0e0e0",
+    placeholder: isDark ? "#a9bcd0" : "#666666",
+    button: isDark ? "#1e90ff" : "#0077cc",
+    secondaryText: isDark ? "#a9bcd0" : "#333333",
+  };
 
   const handleLogin = async () => {
     if (!email || !password || !role) {
@@ -26,10 +40,12 @@ export default function LoginScreen() {
       return;
     }
 
+    setLoading(true);
     try {
       const storedUser = await AsyncStorage.getItem("userData");
       if (!storedUser) {
         alert("No hay usuarios registrados");
+        setLoading(false);
         return;
       }
 
@@ -43,69 +59,52 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  // 🎨 Temas de color
-  const lightTheme = {
-    background: "#f5f7fa",
-    textPrimary: "#1b263b",
-    textSecondary: "#555",
-    inputBackground: "#e0e6ed",
-    placeholder: "#7a869a",
-    buttonBackground: "#cfd8e3",
-    accent: "#1e90ff",
-    iconColor: "#1b263b",
-  };
-
-  const darkTheme = {
-    background: "#0d1b2a",
-    textPrimary: "#ffffff",
-    textSecondary: "#a9bcd0",
-    inputBackground: "#1b263b",
-    placeholder: "#a9bcd0",
-    buttonBackground: "#1b263b",
-    accent: "#1e90ff",
-    iconColor: "#ffffff",
-  };
-
-  const theme = isDarkMode ? darkTheme : lightTheme;
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.background }]}
       contentContainerStyle={{ alignItems: "center" }}
     >
-      {/* 🔘 Switch de tema */}
-      <View style={styles.themeToggle}>
-        <Ionicons name={isDarkMode ? "moon" : "sunny"} size={22} color={theme.iconColor} />
+      {/* 🔘 Switch para cambiar tema */}
+      <View style={styles.switchContainer}>
+        <Ionicons name={isDark ? "moon" : "sunny"} size={22} color={theme.text} />
         <Switch
-          value={isDarkMode}
-          onValueChange={() => setIsDarkMode(!isDarkMode)}
-          thumbColor={isDarkMode ? "#1e90ff" : "#f5f7fa"}
-          trackColor={{ false: "#d0d7de", true: "#1b263b" }}
+          value={isDark}
+          onValueChange={setIsDark}
+          thumbColor={isDark ? "#fff" : "#000"}
+          trackColor={{ false: "#ccc", true: "#1e90ff" }}
         />
       </View>
 
+      {/* Imagen cambia con el tema */}
       <Image
-        source={{ uri: "https://cdn-icons-png.flaticon.com/512/808/808464.png" }}
+        source={{
+          uri: isDark
+            ? "https://cdn-icons-png.flaticon.com/512/808/808464.png"
+            : "https://cdn-icons-png.flaticon.com/512/616/616408.png",
+        }}
         style={styles.logo}
       />
-      <Text style={[styles.title, { color: theme.textPrimary }]}>FitLife</Text>
-      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+
+      <Text style={[styles.title, { color: theme.text }]}>FitLife</Text>
+      <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
         Entrena. Come bien. Vive mejor.
       </Text>
 
       {/* Inputs */}
       <TextInput
-        style={[styles.input, { backgroundColor: theme.inputBackground, color: theme.textPrimary }]}
+        style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
         placeholder="Correo electrónico"
         placeholderTextColor={theme.placeholder}
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
-        style={[styles.input, { backgroundColor: theme.inputBackground, color: theme.textPrimary }]}
+        style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
         placeholder="Contraseña"
         placeholderTextColor={theme.placeholder}
         secureTextEntry
@@ -113,57 +112,49 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      {/* Selección de rol */}
-      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Selecciona tu rol</Text>
+      {/* Roles */}
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>Selecciona tu rol</Text>
       <View style={styles.roleContainer}>
         <TouchableOpacity
-          style={[
-            styles.roleButton,
-            { backgroundColor: theme.buttonBackground },
-            role === "usuario" && { backgroundColor: theme.accent },
-          ]}
+          style={[styles.roleButton, role === "usuario" && { backgroundColor: theme.button }]}
           onPress={() => setRole("usuario")}
         >
-          <Ionicons name="person" size={24} color={theme.iconColor} />
-          <Text style={[styles.roleText, { color: theme.textPrimary }]}>Usuario</Text>
+          <Ionicons name="person" size={24} color="#fff" />
+          <Text style={styles.roleText}>Usuario</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.roleButton,
-            { backgroundColor: theme.buttonBackground },
-            role === "entrenador" && { backgroundColor: theme.accent },
-          ]}
+          style={[styles.roleButton, role === "entrenador" && { backgroundColor: theme.button }]}
           onPress={() => setRole("entrenador")}
         >
-          <Ionicons name="barbell" size={24} color={theme.iconColor} />
-          <Text style={[styles.roleText, { color: theme.textPrimary }]}>Entrenador</Text>
+          <Ionicons name="barbell" size={24} color="#fff" />
+          <Text style={styles.roleText}>Entrenador</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.roleButton,
-            { backgroundColor: theme.buttonBackground },
-            role === "administrador" && { backgroundColor: theme.accent },
-          ]}
+          style={[styles.roleButton, role === "administrador" && { backgroundColor: theme.button }]}
           onPress={() => setRole("administrador")}
         >
-          <Ionicons name="shield-checkmark" size={24} color={theme.iconColor} />
-          <Text style={[styles.roleText, { color: theme.textPrimary }]}>Admin</Text>
+          <Ionicons name="shield-checkmark" size={24} color="#fff" />
+          <Text style={styles.roleText}>Admin</Text>
         </TouchableOpacity>
       </View>
 
       {/* Botón de login */}
-      <TouchableOpacity
-        style={[styles.loginButton, { backgroundColor: theme.accent }]}
-        onPress={handleLogin}
-      >
-        <Text style={[styles.loginText, { color: "#fff" }]}>Iniciar Sesión</Text>
+      <TouchableOpacity style={[styles.loginButton, { backgroundColor: theme.button }]} onPress={handleLogin}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <Ionicons name="log-in" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.loginText}>Iniciar Sesión</Text>
+          </>
+        )}
       </TouchableOpacity>
 
       {/* 👉 Botón que lleva al registro */}
       <TouchableOpacity onPress={() => router.push("../registro")}>
-        <Text style={[styles.footer, { color: theme.textSecondary }]}>
+        <Text style={[styles.footer, { color: theme.secondaryText }]}>
           ¿No tienes cuenta? Regístrate gratis
         </Text>
       </TouchableOpacity>
@@ -177,14 +168,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
   },
-  themeToggle: {
+  switchContainer: {
+    position: "absolute",
+    top: 40,
+    right: 20,
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-end",
-    marginBottom: 20,
-    gap: 10,
+    gap: 5,
   },
-  logo: { width: 90, height: 90, marginBottom: 20 },
+  logo: { width: 90, height: 90, marginBottom: 20, marginTop: 30 },
   title: { fontSize: 28, fontWeight: "bold" },
   subtitle: { fontSize: 16, marginBottom: 30 },
   input: {
@@ -206,19 +198,22 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   roleButton: {
+    backgroundColor: "#1b263b",
     flex: 1,
     alignItems: "center",
     padding: 12,
     borderRadius: 10,
     marginHorizontal: 4,
   },
-  roleText: { marginTop: 5, fontSize: 14 },
+  roleText: { color: "#fff", marginTop: 5, fontSize: 14 },
   loginButton: {
     width: "100%",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
-  loginText: { fontWeight: "bold", fontSize: 16 },
+  loginText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   footer: { marginTop: 25, fontSize: 13 },
 });
