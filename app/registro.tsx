@@ -1,23 +1,32 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Registro() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [role, setRole] = useState<"usuario" | "entrenador" | "administrador" | null>(null);
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (!email || !password || !name) {
-      Alert.alert("Error", "Por favor completa todos los campos");
+    if (!email || !password || !name || !role) {
+      Alert.alert("Error", "Por favor completa todos los campos y selecciona un rol");
       return;
     }
 
     try {
-      // Guardar los datos localmente en AsyncStorage
-      const user = { email, password, name };
+      // Guardar los datos localmente en AsyncStorage, incluyendo el rol
+      const user = { email, password, name, role };
       await AsyncStorage.setItem("userData", JSON.stringify(user));
 
       Alert.alert("Registro exitoso", "Ya puedes iniciar sesión", [
@@ -56,6 +65,34 @@ export default function Registro() {
         onChangeText={setPassword}
       />
 
+      {/* Selección de rol */}
+      <Text style={styles.sectionTitle}>Selecciona tu rol</Text>
+      <View style={styles.roleContainer}>
+        <TouchableOpacity
+          style={[styles.roleButton, role === "usuario" && styles.activeRole]}
+          onPress={() => setRole("usuario")}
+        >
+          <Ionicons name="person" size={22} color="#fff" />
+          <Text style={styles.roleText}>Usuario</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.roleButton, role === "entrenador" && styles.activeRole]}
+          onPress={() => setRole("entrenador")}
+        >
+          <Ionicons name="barbell" size={22} color="#fff" />
+          <Text style={styles.roleText}>Entrenador</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.roleButton, role === "administrador" && styles.activeRole]}
+          onPress={() => setRole("administrador")}
+        >
+          <Ionicons name="shield-checkmark" size={22} color="#fff" />
+          <Text style={styles.roleText}>Admin</Text>
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Registrarme</Text>
       </TouchableOpacity>
@@ -88,6 +125,27 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 15,
   },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  roleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 25,
+  },
+  roleButton: {
+    backgroundColor: "#1b263b",
+    flex: 1,
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    marginHorizontal: 4,
+  },
+  activeRole: { backgroundColor: "#1e90ff" },
+  roleText: { color: "#fff", marginTop: 5, fontSize: 14 },
   button: {
     backgroundColor: "#1e90ff",
     padding: 15,
