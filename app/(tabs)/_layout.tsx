@@ -54,8 +54,16 @@ export default function TabsLayout() {
             <Ionicons name="notifications" size={size} color={color} />
           ),
         }}
-      />
-      
+      /> 
+      <Tabs.Screen
+        name="chatbot"
+        options={{
+          title: "Asistente",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
+          ),
+        }}
+      />  
     </Tabs>
   );
 }
