@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -50,12 +49,13 @@ export default function LoginScreen() {
         return;
       }
 
-      const user = JSON.parse(userData);
-      if (user.email === email && user.password === password) {
-        Alert.alert("Bienvenido", `Hola ${user.name}`);
+      const { email: savedEmail, password: savedPassword, role: savedRole } = JSON.parse(storedUser);
+
+      if (email === savedEmail && password === savedPassword && role === savedRole) {
+        alert("Inicio de sesión exitoso 🎉");
         router.replace("/(tabs)/ejercicios");
       } else {
-        Alert.alert("Error", "Correo o contraseña incorrectos");
+        alert("Credenciales incorrectas");
       }
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
@@ -95,6 +95,7 @@ export default function LoginScreen() {
         Entrena. Come bien. Vive mejor.
       </Text>
 
+      {/* Inputs */}
       <TextInput
         style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
         placeholder="Correo electrónico"
